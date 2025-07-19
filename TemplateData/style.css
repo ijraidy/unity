@@ -1,0 +1,152 @@
+body { 
+  padding: 0; 
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  overflow: hidden;
+}
+
+#unity-container { 
+  position: fixed; 
+  width: 100%; 
+  height: 100%; 
+}
+
+#unity-canvas { 
+  width: 100%; 
+  height: 100%; 
+  background: #1a1a1a;
+}
+
+#unity-loading-bar { 
+  position: absolute; 
+  left: 50%; 
+  top: 50%; 
+  transform: translate(-50%, -50%); 
+  display: none;
+  text-align: center;
+  z-index: 1000;
+}
+
+#unity-logo { 
+  width: 200px; 
+  height: 120px; 
+  background: url('icons/MG logo_red.png') no-repeat center;
+  background-size: contain;
+  margin: 0 auto 30px auto;
+  filter: drop-shadow(0 0 20px rgba(220, 20, 60, 0.3));
+  animation: logoGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes logoGlow {
+  from {
+    filter: drop-shadow(0 0 20px rgba(220, 20, 60, 0.3));
+  }
+  to {
+    filter: drop-shadow(0 0 30px rgba(220, 20, 60, 0.6));
+  }
+}
+
+#unity-progress-bar-empty { 
+  margin: 20px auto 0 auto; 
+  width: 300px; 
+  height: 8px; 
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#unity-progress-bar-empty::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+#unity-progress-bar-full { 
+  width: 0%; 
+  height: 100%; 
+  background: linear-gradient(90deg, #dc143c 0%, #ff6b6b 50%, #dc143c 100%);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+  position: relative;
+  box-shadow: 0 0 15px rgba(220, 20, 60, 0.5);
+}
+
+#unity-progress-bar-full::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  border-radius: 10px;
+  animation: progressShine 1.5s ease-in-out infinite;
+}
+
+@keyframes progressShine {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+/* Loading text */
+#unity-loading-bar::after {
+  content: 'Loading MG Experience...';
+  display: block;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 300;
+  margin-top: 20px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  animation: textPulse 2s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+#unity-warning { 
+  position: absolute; 
+  left: 50%; 
+  top: 5%; 
+  transform: translate(-50%); 
+  background: rgba(0, 0, 0, 0.9); 
+  color: white;
+  padding: 15px 20px; 
+  display: none;
+  border-radius: 8px;
+  border-left: 4px solid #dc143c;
+  font-family: 'Arial', sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  #unity-logo {
+    width: 150px;
+    height: 90px;
+  }
+  
+  #unity-progress-bar-empty {
+    width: 250px;
+  }
+  
+  #unity-loading-bar::after {
+    font-size: 14px;
+  }
+}

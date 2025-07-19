@@ -1,0 +1,15 @@
+{
+    "name": "MG Car Configurator",
+    "short_name": "MG Car Configurator",
+    "start_url": "index.html",
+    "display": "fullscreen",
+    "background_color": "#E2E2E2",
+    "theme_color": "#000",
+    "description": "MG",
+    "icons": [{
+      "src": "TemplateData/icons/unity-logo-dark.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }]
+  }
