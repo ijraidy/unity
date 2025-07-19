@@ -1,1 +1,25 @@
+# Unity WebGL Build Files - Use Git LFS for large files
 Build/*.data filter=lfs diff=lfs merge=lfs -text
+Build/*.wasm filter=lfs diff=lfs merge=lfs -text
+Build/*.framework.js filter=lfs diff=lfs merge=lfs -text
+
+# Unity Streaming Assets
+StreamingAssets/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
+StreamingAssets/**/*.mp3 filter=lfs diff=lfs merge=lfs -text
+StreamingAssets/**/*.wav filter=lfs diff=lfs merge=lfs -text
+StreamingAssets/**/*.ogg filter=lfs diff=lfs merge=lfs -text
+
+# Other large Unity files
+*.unitypackage filter=lfs diff=lfs merge=lfs -text
+*.asset filter=lfs diff=lfs merge=lfs -text
+*.cubemap filter=lfs diff=lfs merge=lfs -text
+*.renderTexture filter=lfs diff=lfs merge=lfs -text
+
+# Large media files
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.tga filter=lfs diff=lfs merge=lfs -text
+*.tiff filter=lfs diff=lfs merge=lfs -text
+*.exr filter=lfs diff=lfs merge=lfs -text
+*.hdr filter=lfs diff=lfs merge=lfs -text
