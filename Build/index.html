@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>MG Car Configurator</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="mg-unity-template">
+    <!-- MG Header -->
+    <header class="mg-header">
+        <div class="mg-nav">
+            <div class="mg-brand">
+                <img src="TemplateData/mg-logo-white.png" alt="MG Logo" class="mg-logo">
+                <span class="mg-brand-text">MG Car Configurator</span>
+            </div>
+            <div class="mg-controls">
+                <button id="fullscreenButton" class="mg-btn mg-btn-icon" title="Fullscreen">
+                    <span class="fullscreen-icon">⛶</span>
+                </button>
+                <button id="qualityButton" class="mg-btn mg-btn-icon" title="Graphics Quality">
+                    <span class="quality-icon">⚙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Unity Container -->
+    <div id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas" tabindex="-1"></canvas>
+        
+        <!-- Loading Screen -->
+        <div id="unity-loading-bar">
+            <div class="mg-loading-container">
+                <img src="TemplateData/mg-logo-red.png" alt="MG Logo" class="mg-loading-logo">
+                <div class="mg-loading-text">Loading MG Configurator...</div>
+                <div class="mg-progress-bar-container">
+                    <div class="mg-progress-bar-empty">
+                        <div class="mg-progress-bar-full" id="unity-progress-bar-full"></div>
+                    </div>
+                    <div class="mg-progress-text" id="unity-progress-text">0%</div>
+                </div>
+                <div class="mg-loading-tips">
+                    <p id="loading-tip">💡 Use mouse wheel to zoom, right-click to pan</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Build Error -->
+        <div id="unity-build-title" class="mg-error-container" style="display: none;">
+            <div class="mg-error-content">
+                <h2>⚠️ Loading Error</h2>
+                <p>Unable to load the MG Car Configurator</p>
+                <div id="unity-build-title-text"></div>
+                <button onclick="location.reload()" class="mg-btn mg-btn-primary">Retry</button>
+            </div>
+        </div>
+        
+        <!-- Footer Info -->
+        <div id="unity-footer" class="mg-footer-info">
+            <div class="mg-footer-content">
+                <div class="mg-footer-left">
+                    <span class="mg-version">v</span>
+                    <span class="mg-separator">|</span>
+                    <span class="mg-company">MG-Jiad</span>
+                </div>
+                <div class="mg-footer-right">
+                    <div class="mg-controls-hint">
+                        <span class="mg-hint-desktop">🖱️ Mouse: Orbit • 🖱️ Right-click: Pan • ⚙️ Wheel: Zoom</span>
+                        <span class="mg-hint-mobile">👆 Touch: Orbit • ✌️ Two fingers: Pan & Zoom</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quality Settings Modal -->
+    <div id="qualityModal" class="mg-modal" style="display: none;">
+        <div class="mg-modal-content">
+            <div class="mg-modal-header">
+                <h3>Graphics Quality</h3>
+                <button class="mg-modal-close" onclick="closeQualityModal()">&times;</button>
+            </div>
+            <div class="mg-modal-body">
+                <div class="mg-quality-options">
+                    <button class="mg-quality-btn" data-quality="0">Ultra</button>
+                    <button class="mg-quality-btn" data-quality="1">High</button>
+                    <button class="mg-quality-btn active" data-quality="2">Medium</button>
+                    <button class="mg-quality-btn" data-quality="3">Low</button>
+                </div>
+                <p class="mg-quality-description">
+                    Adjust graphics quality based on your device performance. 
+                    Lower settings improve frame rate on slower devices.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unity WebGL Loader -->
+    <script>
+        var container = document.querySelector("#unity-container");
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingBar = document.querySelector("#unity-loading-bar");
+        var progressBarFull = document.querySelector("#unity-progress-bar-full");
+        var progressText = document.querySelector("#unity-progress-text");
+        var buildError = document.querySelector("#unity-build-title");
+        var buildErrorText = document.querySelector("#unity-build-title-text");
+        var fullscreenButton = document.querySelector("#fullscreenButton");
+        var qualityButton = document.querySelector("#qualityButton");
+
+        // Loading tips rotation
+        var loadingTips = [
+            "💡 Use mouse wheel to zoom, right-click to pan",
+            "🎨 Press 1-7 to quickly change materials",
+            "📱 Touch and drag to rotate the car",
+            "🔄 Press R to reset camera position",
+            "⛶ Press F for fullscreen mode",
+            "🖱️ Double-click to focus on details"
+        ];
+        var currentTipIndex = 0;
+
+        function rotateTips() {
+            var tipElement = document.getElementById('loading-tip');
+            if (tipElement) {
+                currentTipIndex = (currentTipIndex + 1) % loadingTips.length;
+                tipElement.textContent = loadingTips[currentTipIndex];
+            }
+        }
+
+        var tipRotationInterval = setInterval(rotateTips, 3000);
+
+        // Unity instance
+        var unityInstance = null;
+
+        // Build configuration
+        var buildUrl = "Build";
+        var loaderUrl = buildUrl + "/Build.loader.js";
+        var config = {
+            dataUrl: buildUrl + "/Build.data",
+            frameworkUrl: buildUrl + "/Build.framework.js",
+            codeUrl: buildUrl + "/Build.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "MG-Jiad",
+            productName: "MG Car Configurator",
+            productVersion: "0.1.0",
+            showBanner: false,
+        };
+
+        // Responsive design
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            container.className = "unity-mobile";
+            config.devicePixelRatio = 1;
+        }
+
+        // Loading progress
+        function onProgress(progress) {
+            if (!loadingBar) return;
+            
+            var percentage = Math.round(progress * 100);
+            progressBarFull.style.width = percentage + "%";
+            progressText.textContent = percentage + "%";
+            
+            if (progress == 1) {
+                setTimeout(function() {
+                    loadingBar.style.opacity = "0";
+                    setTimeout(function() {
+                        loadingBar.style.display = "none";
+                        clearInterval(tipRotationInterval);
+                    }, 500);
+                }, 500);
+            }
+        }
+
+        // Error handling
+        function onError(message) {
+            console.error("Unity WebGL Error:", message);
+            loadingBar.style.display = "none";
+            buildError.style.display = "block";
+            buildErrorText.textContent = message;
+            clearInterval(tipRotationInterval);
+        }
+
+        // Load Unity
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+            createUnityInstance(canvas, config, onProgress).then((instance) => {
+                unityInstance = instance;
+                console.log("MG Car Configurator loaded successfully");
+                
+                // Setup post-load features
+                setupKeyboardControls();
+                setupFullscreenButton();
+                setupQualityControls();
+                
+            }).catch((message) => {
+                onError(message);
+            });
+        };
+        script.onerror = () => {
+            onError("Failed to load Unity WebGL loader script");
+        };
+        document.body.appendChild(script);
+
+        // Keyboard controls
+        function setupKeyboardControls() {
+            document.addEventListener('keydown', function(e) {
+                if (!unityInstance) return;
+                
+                switch(e.key) {
+                    case 'f':
+                    case 'F':
+                        toggleFullscreen();
+                        break;
+                    case 'r':
+                    case 'R':
+                        unityInstance.SendMessage('CameraOrbit', 'ResetCamera', '');
+                        break;
+                    case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+                        var materialIndex = parseInt(e.key) - 1;
+                        unityInstance.SendMessage('CarMaterialSwapper', 'ApplyMaterial', materialIndex.toString());
+                        break;
+                }
+            });
+        }
+
+        // Fullscreen functionality
+        function setupFullscreenButton() {
+            fullscreenButton.onclick = toggleFullscreen;
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Quality controls
+        function setupQualityControls() {
+            qualityButton.onclick = () => {
+                document.getElementById('qualityModal').style.display = 'flex';
+            };
+
+            document.querySelectorAll('.mg-quality-btn').forEach(btn => {
+                btn.onclick = () => {
+                    var quality = parseInt(btn.dataset.quality);
+                    setQuality(quality);
+                    
+                    // Update active state
+                    document.querySelectorAll('.mg-quality-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    closeQualityModal();
+                };
+            });
+        }
+
+        function setQuality(level) {
+            if (unityInstance) {
+                unityInstance.SendMessage('QualitySettings', 'SetQualityLevel', level.toString());
+            }
+        }
+
+        function closeQualityModal() {
+            document.getElementById('qualityModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            var modal = document.getElementById('qualityModal');
+            if (event.target == modal) {
+                closeQualityModal();
+            }
+        }
+
+        // Performance monitoring
+        if ('performance' in window) {
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    var perfData = performance.getEntriesByType('navigation')[0];
+                    console.log('MG Configurator Performance:', {
+                        loadTime: Math.round(perfData.loadEventEnd - perfData.loadEventStart),
+                        totalTime: Math.round(perfData.loadEventEnd - perfData.fetchStart)
+                    });
+                }, 1000);
+            });
+        }
+    </script>
+</body>
+</html>
