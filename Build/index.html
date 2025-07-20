@@ -165,11 +165,14 @@
             progressBarFull.style.width = percentage + "%";
             progressText.textContent = percentage + "%";
             
-            if (progress == 1) {
+            if (progress >= 1) {
                 setTimeout(function() {
                     loadingBar.style.opacity = "0";
                     setTimeout(function() {
                         loadingBar.style.display = "none";
+                        // Ensure canvas is visible and properly sized
+                        canvas.style.display = "block";
+                        canvas.focus();
                         clearInterval(tipRotationInterval);
                     }, 500);
                 }, 500);
@@ -179,9 +182,10 @@
         // Error handling
         function onError(message) {
             console.error("Unity WebGL Error:", message);
-            loadingBar.style.display = "none";
-            buildError.style.display = "block";
-            buildErrorText.textContent = message;
+            // Only show error if Unity actually failed to load
+            if (loadingBar && message && !message.includes('net::ERR_CONNECTION_RESET')) {
+                loadingBar.innerHTML = '<div class="mg-error-container"><h2>⚠️ Loading Error</h2><p>Unable to load the MG Car Configurator</p><p class="error-details">' + message + '</p></div>';
+            }
             clearInterval(tipRotationInterval);
         }
 
@@ -193,12 +197,23 @@
                 unityInstance = instance;
                 console.log("MG Car Configurator loaded successfully");
                 
+                // Ensure loading screen is hidden after successful load
+                if (loadingBar) {
+                    loadingBar.style.display = "none";
+                }
+                
+                // Make sure canvas is visible and focused
+                canvas.style.display = "block";
+                canvas.style.visibility = "visible";
+                canvas.focus();
+                
                 // Setup post-load features
                 setupKeyboardControls();
                 setupFullscreenButton();
                 setupQualityControls();
                 
             }).catch((message) => {
+                console.error("Unity loading error:", message);
                 onError(message);
             });
         };
